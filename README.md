@@ -968,8 +968,47 @@ void anotherFunction(int&& x) {
 }
 ```
 ### 可変引数テンプレート
+どの型を代入しても良い引数をテンプレートで指定でき、templateの`...`で表現される。  
+また`...`は型をいれていなくても問題ない。  
+入力した可変引数テンプレートは数が決まっていないため、メンバ変数としてそのまま保持することはできないが、Tupleに代入することでTuple型のメンバ変数の1つとして扱うことが出来る。  
 
+```cpp
+template<typename... Args>
+std::tuple<Args...> makeTupleFromArgs(Args... args) {
+    // std::make_tupleを使用して引数からtupleを作成
+    return std::make_tuple(args...);
+}
 
+int main() {
+    auto myTuple = makeTupleFromArgs(1, "Test", 3.14);
+
+    // 作成されたtupleの内容を出力
+    std::cout << std::get<0>(myTuple) << std::endl;
+}
+```
+関数のオーバーロードと組み合わせることで、再帰的な関数としても利用できる。  
+```cpp
+// 基底関数（引数がない場合に呼び出し）
+void log() {
+  std::cout << "All arguments have been logged." << std::endl;
+}
+
+// 引数を処理するテンプレート関数（再帰関数）
+template <typename T, typename... Args>
+void log(const T &firstArg, const Args &... args) {
+  // 最初の引数の値を出力
+  std::cout << "Logging value: " << firstArg << std::endl;
+  // 残りの引数に対して再帰的にこの関数を呼び出す
+  // オーバーロードで残引数が0の場合は基底関数がコールされ、
+  // そうでなければtemplateの関数が再度コールされる。
+  log(args...);
+}
+
+int main(){
+  // 異なる型の引数を持つlog関数の呼び出し例
+  log(1, "Test", 3.14, "Another string", 42);
+}
+```
 
 # トリビアル(自明)
 
